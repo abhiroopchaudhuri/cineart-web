@@ -25,6 +25,7 @@ export default function CinematicStudio() {
   const [selectedFocalLength, setSelectedFocalLength] = useState(FOCAL_LENGTHS[3]);
   const [selectedAperture, setSelectedAperture] = useState(APERTURES[4]);
   const [selectedColorGrading, setSelectedColorGrading] = useState(COLOR_GRADINGS[0]);
+  const [isColorGradingEnabled, setIsColorGradingEnabled] = useState(true);
 
   const [mainPrompt, setMainPrompt] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -44,7 +45,7 @@ export default function CinematicStudio() {
     const lensText = selectedLens.prompt;
     const focalText = selectedFocalLength.prompt;
     const apertureText = selectedAperture.prompt;
-    const colorGradingText = selectedColorGrading ? selectedColorGrading.prompt + " " : "";
+    const colorGradingText = (isColorGradingEnabled && selectedColorGrading) ? selectedColorGrading.prompt + " " : "";
 
     let final = "";
 
@@ -71,7 +72,7 @@ export default function CinematicStudio() {
         styleSuffix;
     }
     setGeneratedPrompt(final);
-  }, [mode, selectedCamera, selectedLens, selectedFocalLength, selectedAperture, selectedColorGrading, mainPrompt]);
+  }, [mode, selectedCamera, selectedLens, selectedFocalLength, selectedAperture, selectedColorGrading, isColorGradingEnabled, mainPrompt]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedPrompt);
@@ -161,6 +162,16 @@ export default function CinematicStudio() {
               selectedItem={selectedColorGrading}
               onSelect={setSelectedColorGrading}
               typeArg="color"
+              titleAlign="left"
+              disabled={!isColorGradingEnabled}
+              headerAction={
+                <button
+                  onClick={() => setIsColorGradingEnabled(!isColorGradingEnabled)}
+                  className={`w-8 h-4 rounded-full transition-colors relative ${isColorGradingEnabled ? 'bg-teal-500' : 'bg-white/10'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isColorGradingEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
+              }
             />
           </div>
 

@@ -20,7 +20,10 @@ const VerticalRoller = ({
     label,
     height, // Deprecated, calculated dynamically
     typeArg = "name",
-    fallbackImage = null
+    fallbackImage = null,
+    titleAlign = "center",
+    headerAction = null,
+    disabled = false
 }) => {
     const containerRef = useRef(null);
     const scrollTimeout = useRef(null);
@@ -93,17 +96,31 @@ const VerticalRoller = ({
     return (
         <div className="flex flex-col h-full bg-[#0a0a0a] rounded-2xl overflow-hidden relative border border-white/10">
             {/* Header Label */}
-            <div className="absolute top-0 left-0 right-0 z-20 text-center py-3 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-transparent pointer-events-none">
+            <div className={cn(
+                "absolute top-0 left-0 right-0 z-20 py-3 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-transparent flex items-center px-4",
+                titleAlign === 'left' ? "justify-between" : "justify-center"
+            )}>
                 <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">{label}</span>
+                {headerAction && (
+                    <div className="pointer-events-auto">
+                        {headerAction}
+                    </div>
+                )}
             </div>
 
             {/* Center Selection Indicator */}
-            <div className="absolute top-1/2 left-0 right-0 h-[160px] -translate-y-1/2 border-y border-white/10 pointer-events-none z-10 bg-white/[0.02]" />
+            <div className={cn(
+                "absolute top-1/2 left-0 right-0 h-[160px] -translate-y-1/2 border-y border-white/10 pointer-events-none z-10 bg-white/[0.02] transition-opacity duration-300",
+                disabled ? "opacity-0" : "opacity-100"
+            )} />
 
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+                className={cn(
+                    "flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent transition-opacity duration-300",
+                    disabled ? "opacity-30 pointer-events-none grayscale" : "opacity-100"
+                )}
                 style={{ scrollBehavior: 'smooth' }}
             >
                 {/* Top Spacer */}
