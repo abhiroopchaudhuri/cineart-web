@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="metal-grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 256) rotate(90) scale(256)">
+      <stop offset="0" stop-color="#333"/>
+      <stop offset="1" stop-color="#111"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#metal-grad)" stroke="#444"/>
+  <circle cx="256" cy="256" r="230" fill="#1a1a1a"/>
+  
+  <!-- Blades (visible) -->
+  <path d="M256 60 L430 160 v200 L256 460 L82 360 v-200 Z" fill="#252525"/>
+
+  <!-- Aperture Opening (Smaller Hexagon) -->
+  <path d="M256 150 L346 202 V310 L256 362 L166 310 V202 Z" fill="#000" stroke="#333" stroke-width="2"/>
+  
+  <!-- Shine -->
+  <circle cx="220" cy="220" r="100" fill="white" opacity="0.05"/>
+</svg>
