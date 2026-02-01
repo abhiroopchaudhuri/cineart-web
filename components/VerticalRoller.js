@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { cn } from './GlassCard';
 
 /* 
@@ -136,9 +137,11 @@ const VerticalRoller = ({
                                     {/* Left: Image */}
                                     <div className="w-[100px] h-[100px] shrink-0 flex items-center justify-center">
                                         {(item.image || fallbackImage) && (
-                                            <img
+                                            <Image
                                                 src={item.image || fallbackImage}
                                                 alt={item.name}
+                                                width={100}
+                                                height={100}
                                                 className="w-full h-full object-contain drop-shadow-lg"
                                             />
                                         )}
@@ -195,10 +198,11 @@ const VerticalRoller = ({
                                     {typeArg === 'aperture' && (
                                         <div className="relative w-32 h-32 flex items-center justify-center">
                                             {(item.image || fallbackImage) && (
-                                                <img
+                                                <Image
                                                     src={item.image || fallbackImage}
                                                     alt={item.name}
-                                                    className="absolute inset-0 w-full h-full object-contain opacity-100"
+                                                    fill
+                                                    className="absolute inset-0 object-contain opacity-100"
                                                 />
                                             )}
                                             {/* Text Overlay */}
