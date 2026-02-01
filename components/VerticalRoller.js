@@ -7,11 +7,11 @@ import { cn } from './GlassCard';
 
 /* 
    Adjusted dimensions:
-   Container Height: Dynamic
-   Item Height: 160px
-   Spacer = (Container / 2) - (Item / 2)
+   Desktop: Item Height 160px
+   Mobile: Item Width 120px (Horizontal)
 */
-const ITEM_HEIGHT = 160;
+const ITEM_HEIGHT_DESKTOP = 160;
+const ITEM_WIDTH_MOBILE = 120;
 
 const VerticalRoller = ({
     items,
@@ -27,7 +27,18 @@ const VerticalRoller = ({
 }) => {
     const containerRef = useRef(null);
     const scrollTimeout = useRef(null);
-    const [spacerHeight, setSpacerHeight] = useState(100); // Default start
+    const [spacerSize, setSpacerSize] = useState(100);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Detect Mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Dynamic spacer calculation using ResizeObserver
     useEffect(() => {
@@ -35,8 +46,13 @@ const VerticalRoller = ({
 
         const updateSpacer = () => {
             if (containerRef.current) {
-                const h = containerRef.current.offsetHeight;
-                setSpacerHeight((h / 2) - (ITEM_HEIGHT / 2));
+                if (isMobile) {
+                    const w = containerRef.current.offsetWidth;
+                    setSpacerSize((w / 2) - (ITEM_WIDTH_MOBILE / 2));
+                } else {
+                    const h = containerRef.current.offsetHeight;
+                    setSpacerSize((h / 2) - (ITEM_HEIGHT_DESKTOP / 2));
+                }
             }
         };
 
@@ -47,19 +63,23 @@ const VerticalRoller = ({
         observer.observe(containerRef.current);
 
         return () => observer.disconnect();
-    }, []);
+    }, [isMobile]);
 
-    // Scroll selected item to center on mount
+    // Scroll selected item to center on mount or mode change
     useEffect(() => {
         if (selectedItem && containerRef.current) {
             const index = items.findIndex(i => i.name === selectedItem.name);
             if (index !== -1) {
-                // Calculate scroll position to center the item
-                const scrollTo = index * ITEM_HEIGHT;
-                containerRef.current.scrollTop = scrollTo;
+                if (isMobile) {
+                    const scrollTo = index * ITEM_WIDTH_MOBILE;
+                    containerRef.current.scrollLeft = scrollTo;
+                } else {
+                    const scrollTo = index * ITEM_HEIGHT_DESKTOP;
+                    containerRef.current.scrollTop = scrollTo;
+                }
             }
         }
-    }, [spacerHeight]); // Re-run when spacer changes to ensuring correct centering
+    }, [spacerSize, isMobile, selectedItem?.name]); // Re-run when layout changes
 
     const handleScroll = () => {
         if (!containerRef.current) return;
@@ -70,9 +90,15 @@ const VerticalRoller = ({
             const container = containerRef.current;
             if (!container) return;
 
-            // Find which item is closest to center
-            const scrollTop = container.scrollTop;
-            const index = Math.round(scrollTop / ITEM_HEIGHT);
+            let index = 0;
+            if (isMobile) {
+                const scrollLeft = container.scrollLeft;
+                index = Math.round(scrollLeft / ITEM_WIDTH_MOBILE);
+            } else {
+                const scrollTop = container.scrollTop;
+                index = Math.round(scrollTop / ITEM_HEIGHT_DESKTOP);
+            }
+
             const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
 
             if (items[clampedIndex] && items[clampedIndex].name !== selectedItem?.name) {
@@ -97,7 +123,7 @@ const VerticalRoller = ({
         <div className="flex flex-col h-full bg-[#0a0a0a] rounded-2xl overflow-hidden relative border border-white/10">
             {/* Header Label */}
             <div className={cn(
-                "absolute top-0 left-0 right-0 z-20 py-3 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-transparent flex items-center px-4",
+                "absolute top-0 left-0 right-0 z-20 py-2 md:py-3 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-transparent flex items-center px-4",
                 titleAlign === 'left' ? "justify-between" : "justify-center"
             )}>
                 <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">{label}</span>
@@ -109,22 +135,36 @@ const VerticalRoller = ({
             </div>
 
             {/* Center Selection Indicator */}
+            {/* Desktop: Horizontal bar. Mobile: Vertical bar (or box frame)? 
+                Actually, simpler to keep "Center" logic.
+                Desktop: top-1/2, h-[160px], w-full.
+                Mobile: left-1/2, w-[120px], h-full.
+            */}
             <div className={cn(
-                "absolute top-1/2 left-0 right-0 h-[160px] -translate-y-1/2 border-y border-white/10 pointer-events-none z-10 bg-white/[0.02] transition-opacity duration-300",
-                disabled ? "opacity-0" : "opacity-100"
+                "absolute border-white/10 pointer-events-none z-10 bg-white/[0.02] transition-opacity duration-300",
+                disabled ? "opacity-0" : "opacity-100",
+                isMobile
+                    ? "top-0 bottom-0 left-1/2 -translate-x-1/2 w-[120px] border-x" // Mobile: Vertical slice
+                    : "top-1/2 left-0 right-0 h-[160px] -translate-y-1/2 border-y" // Desktop: Horizontal slice
             )} />
 
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
                 className={cn(
-                    "flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent transition-opacity duration-300",
+                    "flex-1 scrollbar-hide transition-opacity duration-300",
+                    isMobile
+                        ? "flex flex-row overflow-x-auto snap-x snap-mandatory items-center"
+                        : "flex flex-col overflow-y-auto snap-y snap-mandatory",
                     disabled ? "opacity-30 pointer-events-none grayscale" : "opacity-100"
                 )}
                 style={{ scrollBehavior: 'smooth' }}
             >
-                {/* Top Spacer */}
-                <div style={{ height: `${spacerHeight}px` }} className="shrink-0" />
+                {/* Spacer */}
+                <div
+                    style={isMobile ? { width: `${spacerSize}px` } : { height: `${spacerSize}px` }}
+                    className="shrink-0"
+                />
 
                 {items.map((item, idx) => {
                     const isSelected = selectedItem?.name === item.name;
@@ -135,24 +175,35 @@ const VerticalRoller = ({
                             key={item.name}
                             onClick={() => {
                                 if (containerRef.current) {
-                                    containerRef.current.scrollTo({
-                                        top: idx * ITEM_HEIGHT,
-                                        behavior: 'smooth'
-                                    });
+                                    if (isMobile) {
+                                        containerRef.current.scrollTo({
+                                            left: idx * ITEM_WIDTH_MOBILE,
+                                            behavior: 'smooth'
+                                        });
+                                    } else {
+                                        containerRef.current.scrollTo({
+                                            top: idx * ITEM_HEIGHT_DESKTOP,
+                                            behavior: 'smooth'
+                                        });
+                                    }
                                 }
                             }}
                             className={cn(
-                                "snap-center shrink-0 w-full flex items-center cursor-pointer transition-all duration-300 px-4",
-                                isNameType ? "justify-start" : "justify-center", // Left align for camera/lens, center for others
+                                "snap-center shrink-0 flex items-center cursor-pointer transition-all duration-300 px-4",
+                                isMobile ? "justify-center flex-col h-full" : "w-full", // Mobile items
+                                !isMobile && (isNameType ? "justify-start" : "justify-center"), // Desktop items
                                 isSelected ? "opacity-100 scale-100" : "opacity-30 scale-95 blur-[1px]"
                             )}
-                            style={{ height: `${ITEM_HEIGHT}px` }}
+                            style={isMobile
+                                ? { width: `${ITEM_WIDTH_MOBILE}px` }
+                                : { height: `${ITEM_HEIGHT_DESKTOP}px` }
+                            }
                         >
-                            {/* Layout for Camera / Lens: Side by Side */}
+                            {/* Layout specific content */}
                             {isNameType ? (
-                                <div className="flex items-center gap-4 w-full">
-                                    {/* Left: Image */}
-                                    <div className="w-[100px] h-[100px] shrink-0 flex items-center justify-center">
+                                <div className={cn("flex items-center gap-4", isMobile ? "flex-col w-full text-center gap-2" : "w-full")}>
+                                    {/* Image */}
+                                    <div className={cn("shrink-0 flex items-center justify-center", isMobile ? "w-[60px] h-[60px]" : "w-[100px] h-[100px]")}>
                                         {(item.image || fallbackImage) && (
                                             <Image
                                                 src={item.image || fallbackImage}
@@ -164,56 +215,50 @@ const VerticalRoller = ({
                                         )}
                                     </div>
 
-                                    {/* Right: Text Info */}
-                                    <div className="flex flex-col items-start min-w-0">
-                                        <span className="text-lg font-bold text-slate-100 leading-tight">
+                                    {/* Text Info */}
+                                    <div className={cn("flex flex-col items-center min-w-0", !isMobile && "items-start")}>
+                                        <span className={cn("font-bold text-slate-100 leading-tight", isMobile ? "text-xs" : "text-lg")}>
                                             {item.name.split('(')[0].trim()}
                                         </span>
-                                        {item.type && (
-                                            <span className="text-[10px] font-bold text-[#666] uppercase mt-1 tracking-wider bg-[#1a1a1a] px-2 py-0.5 rounded">
-                                                {item.type === 'TYPE_DIGITAL' ? 'DIGITAL' : 'FILM'}
-                                            </span>
-                                        )}
-                                        {!item.type && label === 'LENS' && (
-                                            <span className="text-[10px] font-bold text-[#666] uppercase mt-1 tracking-wider bg-[#1a1a1a] px-2 py-0.5 rounded">
-                                                {item.name.includes("Anamorphic") ? "ANAMORPHIC" : "SPHERICAL"}
-                                            </span>
-                                        )}
+                                        <div className="flex flex-wrap gap-1 mt-1 justify-center">
+                                            {item.type && (
+                                                <span className="text-[9px] font-bold text-[#666] uppercase tracking-wider bg-[#1a1a1a] px-2 py-0.5 rounded">
+                                                    {item.type === 'TYPE_DIGITAL' ? 'DIG' : 'FILM'}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ) : typeArg === 'color' ? (
-                                /* Layout for Color Grading: Centered with Palette */
-                                <div className="flex flex-col items-center gap-3 w-full px-4">
-                                    <div className="text-center">
-                                        <div className="text-lg font-bold text-slate-100 leading-tight">
-                                            {item.name}
-                                        </div>
+                                <div className="flex flex-col items-center gap-2 w-full px-2">
+                                    <div className={cn("font-bold text-slate-100 leading-tight text-center", isMobile ? "text-xs" : "text-lg")}>
+                                        {item.name}
                                     </div>
                                     {/* Palette Bubbles */}
-                                    <div className="flex gap-1">
+                                    <div className={cn("flex gap-1 mt-1 justify-center", isMobile ? "grid grid-cols-5 gap-1.5" : "flex-wrap")}>
                                         {item.palette && item.palette.map((color, cIdx) => (
                                             <div
                                                 key={cIdx}
-                                                className="w-6 h-6 rounded-full ring-1 ring-white/10 shadow-lg"
+                                                className={cn("rounded-full ring-1 ring-white/10 shadow-lg", isMobile ? "w-3 h-3" : "w-6 h-6")}
                                                 style={{ backgroundColor: color }}
                                             />
                                         ))}
                                     </div>
                                 </div>
                             ) : (
-                                /* Layout for Focal / Aperture: Centered Stack */
+                                /* Layout for Focal / Aperture */
                                 <div className="flex flex-col items-center gap-2">
                                     {/* Focal Length Display */}
                                     {typeArg === 'focal' && (
                                         <div className="flex flex-col items-center">
-                                            <span className="text-5xl font-bold text-white tracking-tighter">{getFocalDisplay(item.name)}</span>
+                                            <span className={cn("font-bold text-white tracking-tighter", isMobile ? "text-3xl" : "text-5xl")}>{getFocalDisplay(item.name)}</span>
                                             <span className="text-sm text-slate-500 font-medium">mm</span>
                                         </div>
                                     )}
 
-                                    {/* Aperture Display (Text Overlay) */}
+                                    {/* Aperture Display */}
                                     {typeArg === 'aperture' && (
-                                        <div className="relative w-32 h-32 flex items-center justify-center">
+                                        <div className={cn("relative flex items-center justify-center", isMobile ? "w-20 h-20" : "w-32 h-32")}>
                                             {(item.image || fallbackImage) && (
                                                 <Image
                                                     src={item.image || fallbackImage}
@@ -222,25 +267,92 @@ const VerticalRoller = ({
                                                     className="absolute inset-0 object-contain opacity-100"
                                                 />
                                             )}
-                                            {/* Text Overlay */}
-                                            <span className="relative z-10 text-3xl font-bold text-white tracking-tighter drop-shadow-md">
+                                            <span className={cn("relative z-10 font-bold text-white tracking-tighter drop-shadow-md", isMobile ? "text-xl" : "text-3xl")}>
                                                 {getApertureDisplay(item.name)}
                                             </span>
                                         </div>
                                     )}
                                 </div>
                             )}
+
                         </div>
                     );
                 })}
 
-                {/* Bottom Spacer */}
-                <div style={{ height: `${spacerHeight}px` }} className="shrink-0" />
+                {/* Spacer */}
+                <div
+                    style={isMobile ? { width: `${spacerSize}px` } : { height: `${spacerSize}px` }}
+                    className="shrink-0"
+                />
             </div>
 
+            {/* Inspiration Badge (Static position, dynamic content) */}
+            {(() => {
+                const getBadgeText = (item) => {
+                    if (!item) return null;
+                    if (item.inspiration) return item.inspiration;
+                    const match = item.name.match(/\(([^)]+)\)/);
+                    if (match) return match[1];
+                    return null;
+                };
+
+                const badgeText = getBadgeText(selectedItem);
+
+                return badgeText ? (
+                    <InspirationBadge text={badgeText} isMobile={isMobile} />
+                ) : null;
+            })()}
+
             {/* Fade overlays */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-10" />
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-10" />
+            <div className={cn(
+                "pointer-events-none z-10 absolute",
+                isMobile
+                    ? "top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-[#0a0a0a] to-transparent"
+                    : "top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent"
+            )} />
+            <div className={cn(
+                "pointer-events-none z-10 absolute",
+                isMobile
+                    ? "top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-[#0a0a0a] to-transparent"
+                    : "bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent"
+            )} />
+        </div>
+    );
+};
+
+const InspirationBadge = ({ text, isMobile }) => {
+    // If mobile, hide or simplify? Requirements didn't specify, but "less whitespace" implies compact.
+    // I'll keep it but small.
+    const textRef = useRef(null);
+    const [isTruncated, setIsTruncated] = useState(false);
+
+    useEffect(() => {
+        if (textRef.current) {
+            setIsTruncated(textRef.current.scrollWidth > textRef.current.clientWidth);
+        }
+    }, [text]);
+
+    return (
+        <div className={cn("absolute z-20 group", isMobile ? "bottom-2 right-2" : "bottom-3 right-4")}>
+            {/* Tooltip logic simplified for brevity, keeping existing if desktop */}
+            {isTruncated && !isMobile && (
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-30 w-max max-w-[250px]">
+                    <div className="bg-[#1a1a1a] text-[#999] text-[10px] font-medium px-3 py-2 rounded-lg border border-white/10 shadow-2xl relative">
+                        {text}
+                        <div className="absolute right-4 bottom-[-4px] w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
+                    </div>
+                </div>
+            )}
+
+            <span
+                ref={textRef}
+                className={cn(
+                    "font-bold text-[#666] uppercase tracking-wider bg-[#1a1a1a] px-2 py-1 rounded border border-white/5 truncate block shadow-lg",
+                    isMobile ? "text-[8px] max-w-[100px]" : "text-[9px] max-w-[180px]"
+                )}
+            >
+                {text}
+            </span>
         </div>
     );
 };
