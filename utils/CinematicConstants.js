@@ -57,32 +57,38 @@ export const LENSES = [
     {
         name: "Panavision C-Series Anamorphic",
         prompt: "Panavision C-Series Anamorphic lens, characteristic horizontal blue lens flares, oval bokeh, barrel distortion at the edges, cinematic widescreen aspect ratio, vintage Hollywood feel.",
-        inspiration: "Star Wars, Blade Runner"
+        inspiration: "Star Wars, Blade Runner",
+        image: "/images/lenses/panavision_c_series.png"
     },
     {
         name: "Cooke S4/i Primes",
         prompt: "Cooke S4/i Prime lens, the \"Cooke Look\", warm and creamy rendering, smooth focus falloff, extremely flattering on human faces, romantic and soft cinematic atmosphere.",
-        inspiration: "Harry Potter, Zero Dark Thirty"
+        inspiration: "Harry Potter, Zero Dark Thirty",
+        image: "/images/lenses/cooke_s4_primes.png"
     },
     {
         name: "ARRI Signature Primes",
         prompt: "ARRI Signature Prime lens, modern perfect optics, zero distortion, magnetic skin tones, incredibly creamy out-of-focus areas, crisp but organic, high-end commercial look.",
-        inspiration: "Modern Netflix Originals"
+        inspiration: "Modern Netflix Originals",
+        image: "/images/lenses/arri_signature_prime.png"
     },
     {
         name: "Helios 44-2 (Vintage)",
         prompt: "Vintage Helios 44-2 lens, swirling \"soap bubble\" bokeh, soft dreamy edges, low contrast, interesting optical flaws, erratic light flares, unique indie film character.",
-        inspiration: "The Batman (Chase scene)"
+        inspiration: "The Batman (Chase scene)",
+        image: "/images/lenses/helios_44_2.png"
     },
     {
         name: "Atlas Orion Anamorphic",
         prompt: "Atlas Orion Anamorphic lens, modern clean anamorphic look, controlled silver-blue flares, painting-like bokeh, sharp subject separation, sci-fi aesthetic.",
-        inspiration: "Don't Look Up, Babylon"
+        inspiration: "Don't Look Up, Babylon",
+        image: "/images/lenses/atlas_orion.png"
     },
     {
         name: "Canon K-35 (1970s)",
         prompt: "Vintage Canon K-35 prime lens, glowing highlights, lower contrast, soft pastel colors, dreamy haze, award-winning vintage glass look.",
-        inspiration: "Her, Aliens"
+        inspiration: "Her, Aliens",
+        image: "/images/lenses/canon_k35.png"
     }
 ];
 

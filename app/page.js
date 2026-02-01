@@ -83,12 +83,10 @@ export default function CinematicStudio() {
     <div className="h-screen w-screen text-slate-200 font-sans overflow-hidden flex flex-col">
 
       {/* Navbar with 32px top margin */}
-      <nav className="mt-8 mx-auto z-50 flex items-center gap-8 bg-[#111]/80 backdrop-blur-md px-6 py-2 rounded-full border border-white/5 shadow-2xl shrink-0">
+      <nav className="mt-8 mx-auto z-50 flex items-center gap-8 bg-[#111]/80 backdrop-blur-md px-6 py-2 rounded-full border border-white/10 shadow-2xl shrink-0">
         <div className="flex items-center gap-2 text-white font-bold tracking-tighter">
-          <div className="w-8 h-8 bg-gradient-to-br from-cine-teal to-purple-600 rounded-lg flex items-center justify-center">
-            <Clapperboard size={16} className="text-white" />
-          </div>
-          <span>CINEART</span>
+          <img src="/images/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+          <span>CineArt Studio</span>
         </div>
         <div className="w-px h-6 bg-white/10" />
         <div className="flex gap-1">
@@ -144,7 +142,7 @@ export default function CinematicStudio() {
         <div className="mt-8 mb-8 flex-1 min-h-0 grid grid-cols-12 gap-4">
 
           {/* Col 1: User Prompt */}
-          <div className="col-span-4 bg-[#0a0a0a] rounded-2xl border border-white/5 p-4 flex flex-col group focus-within:border-white/20 transition-colors overflow-hidden h-full">
+          <div className="col-span-4 bg-[#0a0a0a] rounded-2xl border border-white/10 p-4 flex flex-col group focus-within:border-white/20 transition-colors overflow-hidden h-full">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1 shrink-0">SCENE DESCRIPTION</span>
             <textarea
               value={mainPrompt}
@@ -167,7 +165,7 @@ export default function CinematicStudio() {
           </div>
 
           {/* Col 3: Output Prompt */}
-          <div className="col-span-5 bg-[#0a0a0a] rounded-2xl border border-white/5 p-4 flex flex-col relative group overflow-hidden h-full">
+          <div className="col-span-5 bg-[#0a0a0a] rounded-2xl border border-white/10 p-4 flex flex-col relative group overflow-hidden h-full">
             <div className="flex justify-between items-center mb-2 px-1 shrink-0">
               <span className="text-[10px] font-bold text-teal-500/80 uppercase tracking-widest">GENERATED PROMPT</span>
               <button
